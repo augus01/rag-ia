@@ -1,0 +1,10 @@
+raganything==1.4.4
+lightrag-hku==1.4.16
+pymupdf
+ollama
+psycopg[binary]
+pgvector
+numpy
+python-dotenv
+fastapi
+uvicorn
