@@ -87,9 +87,12 @@ def busqueda_hibrida(conn, query_emb, query_text: str, k: int = config.TOP_K,
         ORDER BY embedding <=> %(emb)s LIMIT 30
     ),
     kw AS (
+        -- plainto_tsquery une los términos con AND: una pregunta completa casi nunca calza.
+        -- Se convierte a OR (&  ->  |) y ts_rank_cd ordena por cuántos términos coinciden.
         SELECT id, ts_rank_cd(tsv, q) AS rank_kw,
                ROW_NUMBER() OVER (ORDER BY ts_rank_cd(tsv, q) DESC) AS r
-        FROM {T}, websearch_to_tsquery('spanish', %(q)s) q
+        FROM {T},
+             to_tsquery('spanish', replace(plainto_tsquery('spanish', %(q)s)::text, '&', '|')) q
         WHERE tsv @@ q {"AND categoria_id = %(cat)s" if categoria else ""}
         ORDER BY rank_kw DESC LIMIT 30
     )
